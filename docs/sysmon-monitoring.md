@@ -42,8 +42,10 @@ The initial approach was to forward all Sysmon events to Splunk and perform even
 
 This approach allowed me to examine the available event types before deciding which events should be prioritized or excluded.
 
-After several rounds of tuning, the final Sysmon configuration is ....
+After several rounds of tuning, I finalized the Sysmon configuration.<br>
+The final Sysmon configuration is available here:
 
+[View Sysmon Configuration](../configs/sysmon-config.xml)
 
 
 ### 3.3 Splunk Enterprise Setup
