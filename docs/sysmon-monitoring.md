@@ -1,15 +1,125 @@
 # Sysmon Monitoring
 
-## Objective
+## 1. Objective
 Learn how to collect and analyze Windows system activity using Sysmon.
 
-## Environment
+## 2. Environment
 - Windows
 - Sysmon
-- Splunk
+- Splunk(running on a VM)
 
-## Implementation
+## 3. Implementation
+
+### 3.1 Lab Architecture
+
+I built a Windows security monitoring lab using Sysmon and Splunk to collect and analyze Windows system events.
+
+The environment consists of the following components:
+
+| Component | Role |
+|---|---|
+| Windows 11 | Endpoint being monitored |
+| Sysmon | Collection of Windows system activity events |
+| Splunk Universal Forwarder | Forwarding Windows event logs to Splunk |
+| Splunk Enterprise | Centralized log storage, search, and analysis |
+| Ubuntu VM | Hosting Splunk Enterprise |
+
+The Ubuntu virtual machine was created using VirtualBox.
+
+The VM was configured with NAT networking for external connectivity and a host-only network for communication between the Windows host and the VM.
+
+### 3.2 Sysmon Installation and Configuration
+
+I installed Sysmon on the Windows endpoint to collect detailed system activity logs.
+
+Sysmon records events such as process creation, network connections, and DNS queries, depending on the configured rules.
+
+For this lab, I used the following Windows Event Log channel:
+
+`Microsoft-Windows-Sysmon/Operational`
+
+The initial approach was to forward all Sysmon events to Splunk and perform event filtering and analysis on the Splunk side.
+
+This approach allowed me to examine the available event types before deciding which events should be prioritized or excluded.
+
+After several rounds of tuning, the final Sysmon configuration is ....
+
+
+
+### 3.3 Splunk Enterprise Setup
+
+I installed Splunk Enterprise on a virtual machine to build a centralized log analysis platform.
+
+I followed the official Splunk documentation for the installation procedure :
+
+https://help.splunk.com/en/splunk-enterprise/get-started/search-tutorial/9.3/part-1-getting-started/install-splunk-enterprise#id_0b0731b9_7ad0_4d56_8948_82c25ebc7105--en__Linux_installation_instructions
+
+- Dedicated service account: I configured Splunk Enterprise to run under a dedicated non-root user to follow the principle of least privilege.
+
+### 3.4 Splunk Universal Forwarder Configuration
+
+I configured Splunk Universal Forwarder on the Windows endpoint to collect Sysmon event logs and forward them to Splunk Enterprise.
+
+The following configuration was used in `inputs.conf`:
+
+```ini
+[WinEventLog://Microsoft-Windows-Sysmon/Operational]
+renderXml = true
+index = sysmon
+```
+
+The `renderXml = true` setting enables XML-formatted Windows Event Log collection.
+
+The `index = sysmon` setting specifies the destination index for Sysmon events.
+
+The collected events were forwarded to the Splunk Enterprise instance.
+
+### 3.5 Log Collection and Analysis
+
+The monitoring workflow was designed as follows:
+
+1. Sysmon monitors system activity on the Windows endpoint.
+2. Sysmon writes events to the Windows Event Log.
+3. Splunk Universal Forwarder collects events from the Sysmon Operational channel.
+4. The events are forwarded to Splunk Enterprise.
+5. Splunk stores the events in the `sysmon` index for searching and analysis.
+
+The following SPL query can be used to inspect the collected events:
+
+```spl
+index=sysmon
+| stats count by EventCode
+| sort - count
+```
+
+This query summarizes the number of collected events by event ID and helps identify which event types generate the most data.
+
+Another useful query for investigating DNS activity is:
+
+```spl
+index=sysmon EventCode=22
+```
+
+This query searches for Sysmon DNS query events.
+
+
+## 4. Findings
 To be documented.
 
-## Findings
-To be documented.
+## 5. Challenges and Lessons Learned
+### 5.1 Challenges
+・Tuning the Sysmon configuration
+One of the most challenging aspects of this project was tuning the Sysmon configuration.
+
+It took more time than I initially expected to determine which events should be collected and which could be excluded.
+
+### 5.2 Lessons Learned
+
+Through this project, I learned that collecting more security events does not necessarily lead to more effective monitoring.
+
+It is important to balance log visibility, event volume, and the requirements of security investigations.
+
+I also realized that Sysmon configuration tuning is not simply about reducing the number of collected events. It requires understanding which events provide meaningful information for security analysis and detection.
+
+As a result, I recognized the importance of continuously reviewing and improving logging configurations based on monitoring objectives.
+
