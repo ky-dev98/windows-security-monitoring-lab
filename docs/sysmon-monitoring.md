@@ -117,7 +117,7 @@ It took more time than I initially expected to determine which events should be 
 
 ### 5.2 Lessons Learned
 
-Through this project, I learned that collecting more security events does not necessarily lead to more effective monitoring.
+・Through this project, I learned that collecting more security events does not necessarily lead to more effective monitoring.
 
 It is important to balance log visibility, event volume, and the requirements of security investigations.
 
@@ -125,3 +125,10 @@ I also realized that Sysmon configuration tuning is not simply about reducing th
 
 As a result, I recognized the importance of continuously reviewing and improving logging configurations based on monitoring objectives.
 
+・ File Deletion Monitoring: Event ID 23 vs. 26
+
+During this project, I learned that Sysmon Event IDs 23 and 26 have different behaviors when monitoring file deletion.<br>
+Event ID 23 archives deleted files in addition to logging deletion events, which can lead to unexpected disk space consumption.<br>
+In contrast, Event ID 26 logs file deletion events without archiving the deleted files.<br>
+For this lab, I determined that Event ID 26 was more appropriate because my objective was to monitor file deletion activity rather than preserve deleted files.<br>
+This experience taught me the importance of understanding not only what an event records, but also how enabling it affects system resources and operations.<br>
