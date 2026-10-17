@@ -59,6 +59,9 @@ https://help.splunk.com/en/splunk-enterprise/get-started/search-tutorial/9.3/par
 - Dedicated service account: I configured Splunk Enterprise to run under a dedicated non-root user to follow the principle of least privilege.
 
 ### 3.4 Splunk Universal Forwarder Configuration
+I installed Splunk Universal Forwarder on a Windows machine from which I wanted to collect logs.<br>
+I followed the official Splunk documentation for the installation procedure :<br>
+https://help.splunk.com/en/splunk-cloud-platform/forward-and-process-data/universal-forwarder-manual/10.6/install-the-universal-forwarder/install-a-windows-universal-forwarder#a19ec22d_68d3_4a7f_b41c_456267545717--en__Install_a_Windows_universal_forwarder_from_an_installer
 
 I configured Splunk Universal Forwarder on the Windows endpoint to collect Sysmon event logs and forward them to Splunk Enterprise.
 
