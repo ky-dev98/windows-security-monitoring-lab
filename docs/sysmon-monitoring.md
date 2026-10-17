@@ -59,11 +59,15 @@ https://help.splunk.com/en/splunk-enterprise/get-started/search-tutorial/9.3/par
 - Dedicated service account: I configured Splunk Enterprise to run under a dedicated non-root user to follow the principle of least privilege.
 
 ### 3.4 Splunk Universal Forwarder Configuration
-I installed Splunk Universal Forwarder on a Windows machine from which I wanted to collect logs.<br>
-I followed the official Splunk documentation for the installation procedure :<br>
+I installed Splunk Universal Forwarder on a Windows machine from which I wanted to collect logs.
+
+I followed the official Splunk documentation for the installation procedure :
+
 https://help.splunk.com/en/splunk-cloud-platform/forward-and-process-data/universal-forwarder-manual/10.6/install-the-universal-forwarder/install-a-windows-universal-forwarder#a19ec22d_68d3_4a7f_b41c_456267545717--en__Install_a_Windows_universal_forwarder_from_an_installer
 
 I configured Splunk Universal Forwarder on the Windows endpoint to collect Sysmon event logs and forward them to Splunk Enterprise.
+
+Splunk Universal Forwarder provides a straightforward way to collect and forward Sysmon logs because it supports Windows Event Log collection natively.
 
 The following configuration was used in `inputs.conf`:
 
@@ -99,14 +103,19 @@ index=sysmon
 
 This query summarizes the number of collected events by event ID and helps identify which event types generate the most data.
 
-Another useful query for investigating DNS activity is:
+![Splunk Query 01](../images/sample_splunk01.png)
+
+Another useful sample query for investigating DNS activity is:
 
 ```spl
-index=sysmon EventCode=22
+index=sysmon EventCode=22 
+| stats values(QueryName) by _time
+| sort -_time
 ```
 
-This query searches for Sysmon DNS query events.
+This query displays the domains resolved by Sysmon DNS queries, along with their timestamps.
 
+![Splunk Query 02](../images/sample_splunk02.png)
 
 ## 4. Findings and Lessons Learned
 ### 4.1 Sysmon Configuration Tuning
@@ -134,5 +143,7 @@ In contrast, Event ID 26 logs file deletion events without archiving the deleted
 To resolve this issue, I changed the Sysmon configuration to use Event ID 26 instead of Event ID 23.
 
 This experience taught me that security monitoring configurations can have unintended consequences on everyday system operations, even when no active testing is being performed. It highlighted the importance of considering resource consumption and operational impact when designing and maintaining monitoring systems.
-For this lab, I determined that Event ID 26 was more appropriate because my objective was to monitor file deletion activity rather than preserve deleted files.<br>
-This experience taught me the importance of understanding not only what an event records, but also how enabling it affects system resources and operations.<br>
+
+For this lab, I determined that Event ID 26 was more appropriate because my objective was to monitor file deletion activity rather than preserve deleted files.
+
+This experience taught me the importance of understanding not only what an event records, but also how enabling it affects system resources and operations.
