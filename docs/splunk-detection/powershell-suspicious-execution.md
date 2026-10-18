@@ -260,4 +260,75 @@ This exercise highlighted the importance of selecting appropriate log sources, u
 
 Future work will focus on improving detection accuracy, correlating multiple log sources, and converting detection logic into Sigma rules.
 
-## 5. Future Work
+## 7. Final Detection Rule
+
+### 7.1 Overview
+
+Based on the detection tests and validation results, a consolidated SPL query was developed to identify potentially suspicious PowerShell execution patterns.
+
+The rule combines two log sources:
+
+- **Sysmon Event ID 1 (Process Creation):** Detects PowerShell processes launched with suspicious command-line parameters.
+- **PowerShell Event ID 4104 (Script Block Logging):** Detects references to `Invoke-Expression` and its alias `IEX` within PowerShell script blocks.
+
+The detection covers three behaviors: encoded command execution, hidden PowerShell execution, and dynamic code execution using `Invoke-Expression` or `IEX`.
+
+### 7.2 Consolidated SPL Query
+
+```spl
+(index=sysmon EventCode=1) OR (index=powershell EventCode=4104)
+| eval log_source=case(
+    index="sysmon", "Sysmon Event ID 1",
+    index="powershell", "PowerShell Event ID 4104"
+)
+| eval cmd=case(
+    index="sysmon", coalesce(CommandLine, ""),
+    index="powershell", coalesce(ScriptBlockText, Message, _raw)
+)
+| eval encoded=if(
+    index="sysmon" AND match(cmd, "(?i)(?<![a-z])-enc(?:odedcommand)?\s+"),
+    1, 0
+)
+| eval hidden=if(
+    index="sysmon" AND match(cmd, "(?i)-(?:w|windowstyle)\s+hidden\b"),
+    1, 0
+)
+| eval iex=if(
+    match(cmd, "(?i)\b(?:invoke-expression|iex)\b"),
+    1, 0
+)
+| where encoded=1 OR hidden=1 OR iex=1
+| eval detection_reason=mvappend(
+    if(encoded=1, "EncodedCommand", null()),
+    if(hidden=1, "Hidden Window", null()),
+    if(iex=1, "Invoke-Expression / IEX", null())
+)
+| eval detection_reason=mvjoin(detection_reason, ", ")
+| table _time host log_source User Image ParentImage cmd detection_reason
+| sort - _time
+```
+
+### 7.3 Detection Logic
+
+The consolidated rule identifies suspicious PowerShell activity based on the following conditions:
+
+| Detection Type | Log Source | Detection Condition |
+|---|---|---|
+| Encoded Command Execution | Sysmon Event ID 1 | PowerShell launched with `-EncodedCommand` or `-enc` |
+| Hidden PowerShell Execution | Sysmon Event ID 1 | PowerShell launched with `-WindowStyle Hidden` or `-w Hidden` |
+| Invoke-Expression Execution | Sysmon Event ID 1 / PowerShell Event ID 4104 | Command line or script block contains `Invoke-Expression` or `IEX` |
+
+The `detection_reason` field indicates which detection conditions were matched, allowing analysts to quickly understand why an event was flagged.
+
+### 7.4 Limitations and Future Improvements
+
+This rule is an initial consolidated detection designed for a controlled lab environment.
+
+The following limitations remain:
+
+- Keyword-based detection may generate false positives when suspicious terms appear in comments or string literals.
+- Legitimate administrative operations may use the same PowerShell parameters.
+- The rule does not cover every possible PowerShell parameter abbreviation or obfuscation technique.
+- Events from Sysmon and PowerShell Script Block Logging are combined into a single result set but are not yet correlated by process identity.
+
+Future improvements will focus on detection tuning, process-level correlation, and Sigma rule development.
