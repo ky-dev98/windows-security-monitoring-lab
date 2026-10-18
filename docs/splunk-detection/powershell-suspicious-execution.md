@@ -61,11 +61,25 @@ I also executed a normal PowerShell command without the `-EncodedCommand` parame
 powershell.exe -NoProfile -Command "Write-Output 'Normal Test'"
 ```
 
-### 4.2 Test Results
+#### 4.2 Test Results
 
-*Record whether the encoded-command test was detected and whether the normal-command test was excluded.*
+**01. PowerShell Process Creation Log Verification**
 
-*Add a screenshot of the Splunk search results after verification.*
+Verified that PowerShell process creation events were successfully collected through Sysmon Event ID 1 and could be searched in Splunk Enterprise.
+
+![PowerShell Process Creation Log Verification](../../images/splunk-detection/splunk_detection_suspicious_powershell_01.png)
+
+**02. Encoded PowerShell Command Detection**
+
+Confirmed that the detection rule successfully identified PowerShell execution using the `-EncodedCommand` parameter.
+
+![Encoded PowerShell Command Detection](../../images/splunk-detection/splunk_detection_suspicious_powershell_02.png)
+
+**03. Detection Validation with Normal PowerShell Execution**
+
+Confirmed that the normal PowerShell execution did not match the detection rule, while the encoded command execution remained visible in the search results.
+
+![Detection Validation with Normal PowerShell Execution](../../images/splunk-detection/splunk_detection_suspicious_powershell_03.png)
 
 ## 5. False Positives and Limitations
 
