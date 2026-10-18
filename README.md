@@ -21,9 +21,15 @@ Used products are Sysmon, mitmproxy, Python, and Splunk, etc..
 - Sysmon monitoring
 - HTTP/HTTPS monitoring
 - Splunk integration
+- Detection
 
-## Project Status
-Documentation in progress.
+## Detection Engineering
+
+This project also includes detection rule development
+and validation using Splunk Enterprise.
+
+Detection rules are developed using SPL, with plans to
+explore Sigma rules for SIEM-independent detection logic.
 
 ## Disclaimer
 This repository is an independent personal lab project.
