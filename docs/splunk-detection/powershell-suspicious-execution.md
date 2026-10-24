@@ -277,6 +277,9 @@ The detection covers three behaviors: encoded command execution, hidden PowerShe
 
 ```spl
 (index=sysmon EventCode=1) OR (index=powershell EventCode=4104)
+| where index="powershell" OR (
+    index="sysmon" AND match(lower(Image), "(powershell|pwsh)\\.exe$")
+)
 | eval log_source=case(
     index="sysmon", "Sysmon Event ID 1",
     index="powershell", "PowerShell Event ID 4104"
