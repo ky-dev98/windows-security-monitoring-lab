@@ -15,17 +15,38 @@ Monitoring network connections from these processes can help identify suspicious
 - Confirmed that Sysmon Event ID 3 records outbound network connections.
 - Verified that destination IP addresses, ports, and process information can be identified.
 
-### 2. PowerShell Network Activity
+### 2. PowerShell Network Activity (Test)
 
-- Executed `Invoke-WebRequest` to access `www.google.com` from PowerShell.
-- Successfully detected the outbound HTTPS connection in Splunk using Sysmon Event ID 3.
+Executed the following command to generate a test HTTPS connection to Google:
+
+```powershell
+Invoke-WebRequest -Uri "https://www.google.com" -UseBasicParsing
+```
+
+Successfully detected the connection in Splunk using Sysmon Event ID 3.
+
+```text
+Image: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+SourceIp: 10.0.0.111
+DestinationIp: 142.251.157.119
+DestinationPort: 443
+Protocol: tcp
+ProcessGuid: {4eb6cc91-3f91-6add-cb61-000000002e00}
+```
+
+![PowerShell network connection Detection](../../images/splunk-detection/splunk_suspicious_network_traffic_01.png)
+
+Next, searched Sysmon Event ID 1 using the ProcessGuid obtained from Event ID 3.
+
+![PowerShell network connection Detection from EventID1](../../images/splunk-detection/splunk_suspicious_network_traffic_02.png)
+
+This demonstrated how network connection events can be correlated with process creation events to investigate the process's command line and parent process.
 
 ### 3. Suspicious Process Network Activity
 
-- Searched for network connections initiated by `rundll32.exe`, `regsvr32.exe`, `mshta.exe`, `wscript.exe`, and `cscript.exe`.
-- Detected a network connection from `rundll32.exe`.
-- Correlated Sysmon Event ID 1 and Event ID 3 using `ProcessGuid`.
-- Identified the following execution:
+Searched for network connections initiated by `rundll32.exe`, `regsvr32.exe`, `mshta.exe`, `wscript.exe`, and `cscript.exe`.
+
+Detected a connection from `rundll32.exe` and correlated Sysmon Event ID 1 and Event ID 3 using `ProcessGuid`.
 
 ```text
 ParentImage: C:\Windows\System32\svchost.exe
@@ -33,6 +54,8 @@ CommandLine: rundll32.exe C:\WINDOWS\system32\PcaSvc.dll,PcaPatchSdbTask
 DestinationIp: 57.155.104.224
 DestinationPort: 443
 ```
+![rundll32 network connection Detection EventID3](../../images/splunk-detection/splunk_suspicious_network_traffic_03.png)
+![rundll32 network connection Detection EventID1&3](../../images/splunk-detection/splunk_suspicious_network_traffic_04.png)
 
 The execution appeared to be related to a legitimate Windows compatibility function.
 
@@ -87,5 +110,5 @@ index=sysmon (EventCode=1 OR EventCode=3)
 | table Process ProcessGuid CommandLine DestinationIp DestinationPort NetworkConnectionCount
 | sort - NetworkConnectionCount
 ```
-
+![Network connection detection by suspicious execution processes](../../images/splunk-detection/splunk_suspicious_network_traffic_05.png)
 **Note:** Network activity from these processes is not necessarily malicious. Additional investigation of command-line arguments, parent processes, and destinations is required.
