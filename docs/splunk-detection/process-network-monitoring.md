@@ -1,4 +1,4 @@
-# Suspicious Network Connections
+# Network Activity Monitoring for Suspicious Processes
 
 ## Overview
 
