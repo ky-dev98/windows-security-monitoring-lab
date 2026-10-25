@@ -57,7 +57,7 @@ The timestamps and statuses in this example are manually assigned test values.
 
 CSV files can be easily uploaded to Splunk and used for lookups.
 
-
+![Splunk lookup file ioc](../../images/splunk-detection/splunk_ioc_detection_01.png)
 
 An expired IoC does not necessarily indicate that the IP address or domain is no longer malicious. Therefore, `expires_at` is retained as reference information rather than used as an automatic detection exclusion condition.
 
@@ -80,7 +80,7 @@ The IoC CSV file is uploaded to Splunk and configured as a lookup table.
 
 Lookup file name:
 
-`ioc_sample.csv`
+`ioc_list.csv`
 
 The lookup is used to enrich Sysmon events with matching IoC information.
 
@@ -111,7 +111,7 @@ The query:
 4. Returns events that match registered IoCs.
 5. Displays the associated IoC metadata.
 
-
+![Splunk ioc detection results](../../images/splunk-detection/splunk_ioc_detection_02.png)
 
 This search does not automatically exclude expired IoCs.
 
