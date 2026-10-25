@@ -85,6 +85,8 @@ Relevant fields:
 - `ParentProcessGuid`
 - `_time`
 
+![ParentProcess Detection](../../images/splunk-detection/splunk_suspicious_behavior_detection_01.png)
+
 **Event ID 3 — Network Connection**
 
 Used to identify network connections associated with the PowerShell process.
@@ -98,6 +100,8 @@ Relevant fields:
 - `DestinationPort`
 - `Protocol`
 - `_time`
+
+![ParentProcess Detection with network connections](../../images/splunk-detection/splunk_suspicious_behavior_detection_03.png)
 
 ## Detection Logic
 
@@ -238,6 +242,7 @@ index=sysmon (EventCode=1 OR EventCode=3)
 
 | sort - connection_count
 ```
+![Parent chain detection with network connections](../../images/splunk-detection/splunk_suspicious_behavior_detection_04.png)
 
 ## Validation
 
